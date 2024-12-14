@@ -42,7 +42,7 @@ const App = () => {
       alert("Please select at least one option.");
       return;
     }
-
+    setAllSelected(false)
     setIsLoading(true);
     try {
       const response = await axios.post(`${backendURL}/ask`, {
