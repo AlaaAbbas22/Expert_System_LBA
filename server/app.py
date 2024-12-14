@@ -106,6 +106,20 @@ option_mapping = {
     "laptops_allowed": {"yes": "Yes, it's important.", "no": "No, not necessary"}
 }
 
+result_mapping = {
+    "cafe_martinez": "Café Martinez",
+    "seul_cafe": "Seoul Café",
+    "clorindo": "Clorindo Café",
+    "seoul_cafe": "Seoul Café",
+    "the_coffee_house": "The Coffee House",
+    "cofi_jaus_palermo": "Cofi Jaus Palermo",
+    "manifesto": "Manifesto",
+    "moksha_studio": "Moksha Café Studio",
+    "clorindo_cafe_brunch": "Clorindo Café",
+    "las_flores": "Las Flores",
+    "No Cafe satisfies your preferences" : "No Cafe satisfies your preferences"
+}
+
 
 # **Start Route**
 @app.route("/")
@@ -116,7 +130,7 @@ def start():
     try:
         cafe = next(prolog.query("cafe(X).", maxresult=1))  # Get the first askable
     except StopIteration:
-        cafe = {"X": "No Cafe"}
+        cafe = {"X": "No Cafe satisfies your preferences"}
     except:
         ...
 
@@ -127,7 +141,7 @@ def start():
             "options": [option_mapping[ask_key][opt] for opt in options[ask_key]]  # Use natural language options
         }
     else:
-        return {"result": cafe}  # Return the Cafe
+        return {"result": {"X": result_mapping[cafe["X"]]}}  # Return the Cafe
 
 
 # **Continuation Route**
@@ -143,7 +157,7 @@ def continuation():
     try:
         cafe = next(prolog.query("cafe(X).", maxresult=1))
     except StopIteration:
-        cafe = {"X": "No Cafe"}
+        cafe = {"X": "No Cafe satisfies your preferences"}
     except:
         ...
     
@@ -154,7 +168,7 @@ def continuation():
             "options": [option_mapping[ask_key][opt] for opt in options[ask_key]]
         }
     else:
-        return {"result": cafe}
+        return {"result": {"X": result_mapping[cafe["X"]]}}
 
 # **Dummy Route**
 @app.route("/dummy", methods=["GET"])

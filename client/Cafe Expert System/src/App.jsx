@@ -9,6 +9,7 @@ const App = () => {
   const [result, setResult] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [hasStarted, setHasStarted] = useState(false);
+  const [allSelected, setAllSelected] = useState(false);
 
   const backendURL = "http://localhost:4000"; // Update if hosted elsewhere
 
@@ -68,18 +69,33 @@ const App = () => {
     const selectedValue = e.target.value;
     setAnswers((prev) => {
       if (prev.includes(selectedValue)) {
+        setAllSelected(false)
         return prev.filter((item) => item !== selectedValue); // Deselect option
       } else {
+        if (answers.length == options.length-1){
+          setAllSelected(true)
+        } 
         return [...prev, selectedValue]; // Select option
       }
     });
   };
 
+  const selectAll = (e) => {
+    if (allSelected){
+      setAllSelected(false)
+      setAnswers([])
+    } else {
+      setAllSelected(true)
+      setAnswers(options)
+    }
+  }
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-6 px-4 sm:px-6 lg:px-8">
       <div className="max-w-lg w-full bg-white p-8 rounded-lg shadow-lg space-y-6">
-        <h1 className="text-3xl font-semibold text-center text-indigo-600">Expert System</h1>
-        
+        <h1 className="text-3xl font-semibold text-center text-indigo-600">Cafe Recommender Expert System</h1>
+        {!isLoading && question && !result &&
+         <div className="text-black"> *Please select all options you are okay with.</div>}
         {!hasStarted && (
           <div className="text-center">
             <button
@@ -105,7 +121,18 @@ const App = () => {
         {!isLoading && question && !result && (
           <div>
             <h2 className="text-xl font-medium text-gray-700 mb-4">{question}</h2>
+            
             <form className="space-y-4">
+              <div className="flex items-center space-x-3">
+                <input
+                    id="SelectAll"
+                        type="checkbox"
+                        checked={allSelected}
+                        onChange={selectAll}
+                        className="h-5 w-5 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
+                      />
+                <label htmlFor="SelectAll" className="text-green-700">No Preference</label>
+              </div>
               {options.map((option, index) => (
                 <div key={index} className="flex items-center space-x-3">
                   <input
