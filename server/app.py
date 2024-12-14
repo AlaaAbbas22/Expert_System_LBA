@@ -72,6 +72,41 @@ def after_request_cleanup(response):
         call(retractall(known))  # Clear dynamic predicates
     return response
 
+
+# Natural language mapping for questions
+question_mapping = {
+    "wifi": "Would you prefer a cafe with Wi-Fi?",
+    "wifi_quality": "What is your preference for Wi-Fi quality?",
+    "purchase_required": "Is it important if the cafe requires a purchase to stay?",
+    "outlets": "How many power outlets would you like to have available?",
+    "distance": "What is your preferred search radius?",
+    "english_staff": "Do you require the staff to speak English?",
+    "size": "What cafe size do you prefer?",
+    "busyness": "How busy do you prefer the cafe to be?",
+    "laptops_allowed": "Do you need a cafe that allows laptops?"
+}
+
+
+# Natural language mapping for options
+option_mapping = {
+    "wifi": {"yes": "Yes Please", "no": "Not necessary"},
+    "wifi_quality": {"1": "Poor", "2": "Fair", "3": "Good", "4": "Very Good", "5": "Excellent"},
+    "purchase_required": {"yes": "No, I'm fine if they require purchasing", "no": "Yes, I want to stay without purchasing anything"},
+    "outlets": {"few": "Few outlets is sufficient", "tons": "I require many outlets"},
+    "distance": {
+        "less_than_1_km": "Less than 1 km",
+        "between_1_2_km": "Between 1-2 km",
+        "between_2_5_km": "Between 2-5 km",
+        "between_5_10_km": "Between 5-10 km",
+        "more_than_10_km": "More than 10 km"
+    },
+    "english_staff": {"yes": "Yes, Please!", "no": "No, I can manage!"},
+    "size": {"small": "Small", "medium": "Medium", "big": "Big"},
+    "busyness": {"1": "Very Quiet", "2": "Quiet", "3": "Moderate", "4": "Busy", "5": "Very Busy"},
+    "laptops_allowed": {"yes": "Yes, it's important.", "no": "No, not necessary"}
+}
+
+
 # **Start Route**
 @app.route("/")
 def start():
@@ -86,15 +121,25 @@ def start():
         ...
 
     if session["ask"]:  # If a question is pending
-        return {"ask": str(session["ask"]), "options": list(options[str(session["ask"])])}
+        ask_key = str(session["ask"])
+        return {
+            "ask": question_mapping[ask_key],  # Use natural language question
+            "options": [option_mapping[ask_key][opt] for opt in options[ask_key]]  # Use natural language options
+        }
     else:
         return {"result": cafe}  # Return the Cafe
+
 
 # **Continuation Route**
 @app.route("/ask", methods=["POST"])
 def continuation():
     answers = request.json["answers"]
-    session["choices"][session["ask"]] = set(answers)  # Store the user's answers
+
+    # Map answers back to Prolog-compatible format
+    ask_key = session["ask"]
+    prolog_answers = {key for key, value in option_mapping[ask_key].items() if value in answers}
+    session["choices"][ask_key] = prolog_answers  # Store the user's answers
+
     try:
         cafe = next(prolog.query("cafe(X).", maxresult=1))
     except StopIteration:
@@ -103,7 +148,11 @@ def continuation():
         ...
     
     if session["ask"]:
-        return {"ask": str(session["ask"]), "options": list(options[str(session["ask"])])}
+        ask_key = str(session["ask"])
+        return {
+            "ask": question_mapping[ask_key],
+            "options": [option_mapping[ask_key][opt] for opt in options[ask_key]]
+        }
     else:
         return {"result": cafe}
 
