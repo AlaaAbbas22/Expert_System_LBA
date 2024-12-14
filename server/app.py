@@ -1,7 +1,3 @@
-import os
-os.environ["SWI_HOME_DIR"] = "/opt/homebrew/Cellar/swi-prolog/9.2.8/libexec/lib/swipl"
-os.environ["DYLD_LIBRARY_PATH"] = "/opt/homebrew/lib"
-
 from datetime import timedelta
 from flask import Flask, request, session
 from flask_session import Session
