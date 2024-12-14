@@ -79,14 +79,16 @@ def start():
     session["choices"] = defaultdict(set)
 
     try:
-        problem = next(prolog.query("problem(X).", maxresult=1))  # Get the initial problem
+        cafe = next(prolog.query("cafe(X).", maxresult=1))  # Get the first askable
+    except StopIteration:
+        cafe = {"X": "No Cafe"}
     except:
         ...
 
     if session["ask"]:  # If a question is pending
         return {"ask": str(session["ask"]), "options": list(options[str(session["ask"])])}
     else:
-        return {"result": problem}  # Return the problem or an empty result
+        return {"result": cafe}  # Return the Cafe
 
 # **Continuation Route**
 @app.route("/ask", methods=["POST"])
@@ -94,13 +96,16 @@ def continuation():
     answers = request.json["answers"]
     session["choices"][session["ask"]] = set(answers)  # Store the user's answers
     try:
-        problem = next(prolog.query("problem(X).", maxresult=1))
+        cafe = next(prolog.query("cafe(X).", maxresult=1))
+    except StopIteration:
+        cafe = {"X": "No Cafe"}
     except:
         ...
+    
     if session["ask"]:
         return {"ask": str(session["ask"]), "options": list(options[str(session["ask"])])}
     else:
-        return {"result": problem}
+        return {"result": cafe}
 
 # **Dummy Route**
 @app.route("/dummy", methods=["GET"])

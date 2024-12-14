@@ -95,7 +95,7 @@ const App = () => {
           <div className="text-center text-gray-500">Loading...</div>
         )}
 
-        {!isLoading && result && (
+        {result && (
           <div className="text-center text-lg text-green-600">
             <h2 className="font-medium">Result:</h2>
             <p>{result}</p>
